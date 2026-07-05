@@ -273,30 +273,23 @@ def get_common_ydl_opts():
         'quiet': True,
         'no_warnings': True,
         'cachedir': False,
+        'format': 'best',
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'mweb'],
+                'player_client': ['android_creator', 'android', 'ios'],
             }
         },
         'source_address': '0.0.0.0',
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Sec-Fetch-Mode': 'navigate',
+            'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip',
+            'Accept-Language': 'en-US,en;q=0.9',
         }
     }
-    
+
     # Explicitly pass ffmpeg directory to yt-dlp to prevent PATH resolution issues
     if ffmpeg_dir:
         opts['ffmpeg_location'] = ffmpeg_dir
-        
-    try:
-        from yt_dlp.networking.impersonate import ImpersonateTarget
-        opts['impersonate'] = ImpersonateTarget.from_str('chrome')
-    except Exception:
-        pass
-        
+
     return opts
 
 
