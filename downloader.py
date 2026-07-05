@@ -290,6 +290,12 @@ def get_common_ydl_opts():
     if ffmpeg_dir:
         opts['ffmpeg_location'] = ffmpeg_dir
         
+    try:
+        from yt_dlp.networking.impersonate import ImpersonateTarget
+        opts['impersonate'] = ImpersonateTarget.from_str('chrome')
+    except Exception:
+        pass
+        
     return opts
 
 
