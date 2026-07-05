@@ -274,7 +274,8 @@ def get_common_ydl_opts():
         'no_warnings': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios', 'web'],
+                'player_client': ['web_embedded', 'ios', 'tv', 'mweb'],
+                'formats': ['missing_pot']
             }
         },
         'http_headers': {
