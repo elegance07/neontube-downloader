@@ -272,10 +272,10 @@ def get_common_ydl_opts():
         'geo_bypass': True,
         'quiet': True,
         'no_warnings': True,
+        'cachedir': False,
         'extractor_args': {
             'youtube': {
-                'player_client': ['web_embedded'],
-                'formats': ['missing_pot']
+                'player_client': ['web_embedded', 'ios', 'web', 'tv'],
             }
         },
         'source_address': '0.0.0.0',
@@ -298,6 +298,28 @@ def get_common_ydl_opts():
         pass
         
     return opts
+
+
+def execute_download(ydl_opts, url, status_text):
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+            return True
+    except Exception as e:
+        error_msg = str(e)
+        if "403" in error_msg or "Forbidden" in error_msg:
+            status_text.warning("Hızlı sunucu kanalı engellendi. Alternatif kanal deneniyor...")
+            ydl_opts['format'] = 'best'
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
+                    return True
+            except Exception as e2:
+                status_text.error(f"Hata oluştu: {str(e2)}")
+                return False
+        else:
+            status_text.error(f"Hata oluştu: {error_msg}")
+            return False
 
 
 # ---- Header ----
@@ -508,13 +530,13 @@ if st.session_state.active_url:
                         })
 
                         if ffmpeg_installed:
-                            ydl_opts_video['format'] = f'bestvideo[height<={res_val}][ext=mp4]+bestaudio[ext=m4a]/best[height<={res_val}][ext=mp4]/best'
+                            ydl_opts_video['format'] = f'bestvideo[height<={res_val}]+bestaudio/bestvideo[height<={res_val}][ext=mp4]+bestaudio[ext=m4a]/best[height<={res_val}]/best'
                         else:
-                            ydl_opts_video['format'] = f'best[height<={res_val}][ext=mp4]/best'
+                            ydl_opts_video['format'] = f'best[height<={res_val}]/best'
 
                         try:
-                            with yt_dlp.YoutubeDL(ydl_opts_video) as ydl:
-                                ydl.download([info['url']])
+                            success = execute_download(ydl_opts_video, info['url'], status_text)
+                            if success:
                                 downloaded_files = os.listdir(temp_dir)
                                 if downloaded_files:
                                     filename = downloaded_files[0]
@@ -532,8 +554,6 @@ if st.session_state.active_url:
                                     )
                                 else:
                                     status_text.error("Hata: Video dosyası oluşturulamadı.")
-                        except Exception as e:
-                            status_text.error(f"Hata oluştu: {str(e)}")
                         finally:
                             shutil.rmtree(temp_dir, ignore_errors=True)
 
@@ -598,8 +618,8 @@ if st.session_state.active_url:
                             ydl_opts_audio.update({'format': 'bestaudio[ext=m4a]/bestaudio/best'})
 
                         try:
-                            with yt_dlp.YoutubeDL(ydl_opts_audio) as ydl:
-                                ydl.download([info['url']])
+                            success = execute_download(ydl_opts_audio, info['url'], status_text)
+                            if success:
                                 downloaded_files = [f for f in os.listdir(temp_dir) if not f.endswith(('.part', '.ytdl'))]
                                 if downloaded_files:
                                     filename = downloaded_files[0]
@@ -619,7 +639,5 @@ if st.session_state.active_url:
                                     )
                                 else:
                                     status_text.error("Hata: Ses dosyası oluşturulamadı.")
-                        except Exception as e:
-                            status_text.error(f"Hata oluştu: {str(e)}")
                         finally:
                             shutil.rmtree(temp_dir, ignore_errors=True)
