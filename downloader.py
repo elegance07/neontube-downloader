@@ -275,7 +275,7 @@ def get_common_ydl_opts():
         'cachedir': False,
         'extractor_args': {
             'youtube': {
-                'player_client': ['web_embedded', 'ios', 'web', 'tv'],
+                'player_client': ['ios', 'mweb'],
             }
         },
         'source_address': '0.0.0.0',
